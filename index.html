@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>אתר בדיקות טפסים</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;font-family:Rubik,Heebo,Arial,sans-serif;background:#0b0d0f;color:#f3f4f5;line-height:1.6}
+main{max-width:720px;margin:auto;padding:32px 16px;display:grid;gap:32px}h1{margin:0;font-size:28px}h2{margin:0 0 8px;font-size:20px}
+section{padding:20px;border:1px solid #ffffff1f;border-radius:20px;background:#11151a}p{margin:0 0 12px;color:#b7bec6}
+form{display:grid;gap:12px}label{display:grid;gap:6px}input,select,textarea,button{font:inherit;padding:11px 13px;border-radius:12px;border:1px solid #35383b;background:#0f1215;color:inherit;width:100%}
+button{background:#f3f4f5;color:#0b0d0f;font-weight:600;cursor:pointer}#status{min-height:1.6em}
+</style>
+</head>
+<body>
+<main>
+<header><h1>אתר בדיקות טפסים</h1><p>עמוד בדיקה פנימי לחיבור טפסים למערכת. אין לשלוח כאן פרטים אמיתיים של אחרים.</p></header>
+<section id="embedded"><h2>1. טופס מוטמע (קוד הטמעה)</h2><p>הטופס נטען ישירות מהמערכת דרך קוד ההטמעה.</p><div id="embed-slot"></div></section>
+<section id="own-form"><h2>2. טופס קיים באתר (API / Webhook)</h2><p>טופס רגיל של האתר. השרת של האתר חותם את הבקשה ושולח אותה ל־Webhook.</p>
+<form id="site-form">
+<label>שם מלא<input name="full_name" required autocomplete="name"></label>
+<label>טלפון<input name="mobile" type="tel" dir="ltr" required autocomplete="tel"></label>
+<label>אימייל<input name="email" type="email" dir="ltr" autocomplete="email"></label>
+<label>במה אפשר לעזור?<textarea name="message" rows="3"></textarea></label>
+<label style="display:flex;gap:8px;align-items:start"><input type="checkbox" name="consent" required style="width:auto;margin-top:6px">אני מאשר/ת שיצרו איתי קשר.</label>
+<button type="submit">שליחה</button><p id="status" role="status"></p>
+</form></section>
+</main>
+<script src="config.js"></script>
+<script>
+const cfg=window.TEST_SITE||{};
+if(cfg.embedUrl){const f=document.createElement('iframe');f.src=cfg.embedUrl;f.title='טופס פנייה';f.style.cssText='width:100%;height:760px;border:0;border-radius:18px';document.getElementById('embed-slot').append(f);}else document.getElementById('embed-slot').textContent='קוד ההטמעה עוד לא הוגדר.';
+document.getElementById('site-form').addEventListener('submit',async e=>{e.preventDefault();const status=document.getElementById('status'),data=Object.fromEntries(new FormData(e.target));data.consent=data.consent==='on';status.textContent='שולחים…';
+ try{const r=await fetch((cfg.relayUrl||'http://localhost:8787')+'/lead',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});const body=await r.json().catch(()=>({}));status.textContent=r.ok?'הפנייה התקבלה. תודה!':'השליחה נכשלה ('+(body.error||r.status)+').';if(r.ok)e.target.reset();}catch{status.textContent='שרת האתר אינו זמין כרגע.';}});
+</script>
+</body>
+</html>
